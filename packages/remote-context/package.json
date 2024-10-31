@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@alwatr/fetch-state-machine": "workspace:^",
-    "@alwatr/nanolib": "^1.4.0"
+    "@alwatr/nanolib": "^1.5.0"
   },
   "devDependencies": {
     "@alwatr/nano-build": "^2.0.3",
