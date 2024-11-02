@@ -62,7 +62,7 @@
   ],
   "github.copilot.chat.codeGeneration.instructions": [
     {
-      "file": ".github/copilot-instruction.md"
+      "file": ".vscode/copilot-instruction.md"
     }
   ]
 }
