@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.2.2](https://github.com/Alwatr/flux/compare/v3.2.1...v3.2.2) (2024-11-02)
+
+### Dependencies update
+
+* bump the github-actions group with 2 updates ([#223](https://github.com/Alwatr/flux/issues/223)) ([0d2bd7a](https://github.com/Alwatr/flux/commit/0d2bd7a17c023843a0cd27fe807ce4561c0379b6)) by @dependabot[bot]
+* **deps-dev:** bump @types/node from 22.8.1 to 22.8.6 in the dependencies group ([#224](https://github.com/Alwatr/flux/issues/224)) ([2ffa758](https://github.com/Alwatr/flux/commit/2ffa7587f46b55bddc98be25c60940c3eb61f815)) by @dependabot[bot]
+* **deps:** bump the alwatr group with 6 updates ([#225](https://github.com/Alwatr/flux/issues/225)) ([6f22eda](https://github.com/Alwatr/flux/commit/6f22eda4e9ee6c31e4c32b23b870a5c148a818da)) by @dependabot[bot]
+* update ([2e39720](https://github.com/Alwatr/flux/commit/2e39720465f9ab441dd257f18d5fbe233fc02be0)) by @
+* update dependabot configuration for commit message prefix and scheduling ([6123dcc](https://github.com/Alwatr/flux/commit/6123dcc96135dbddf78908b26a6c62691388cce5)) by @AliMD
+* update VSCode extensions and settings for improved development experience ([9b03c57](https://github.com/Alwatr/flux/commit/9b03c577079565915bda259d8fd152a82892659c)) by @AliMD
+
 ## [3.2.1](https://github.com/Alwatr/flux/compare/v3.2.0...v3.2.1) (2024-10-28)
 
 ### Dependencies update
