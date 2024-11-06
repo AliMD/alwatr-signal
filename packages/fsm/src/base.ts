@@ -33,21 +33,26 @@ export abstract class AlwatrFluxStateMachineBase<S extends string, E extends str
 
     this.initialState_ = config.initialState;
     this.message_ = {state: this.initialState_};
-    this.resetToInitialState_();
+    setTimeout(this.resetToInitialState_.bind(this), 0);
   }
 
+  private firstResetToInitialState__ = true;
   /**
    * Reset machine to initial state without notify.
    */
-  protected resetToInitialState_(): void {
+  protected resetToInitialState_(): Promise<void> {
     this.logger_.logMethod?.('resetToInitialState_');
+    if (this.firstResetToInitialState__) {
+      this.firstResetToInitialState__ = false;
+      const eventDetail: StateEventDetail<S, E> = {from: this.initialState_, event: 'reset', to: this.initialState_};
+      this.execAction__(`on_state_${this.initialState_}_enter`, eventDetail);
+      return this.postTransition__(eventDetail);
+    }
+    // else {
     const from = this.message_.state;
     this.message_ = {state: this.initialState_};
-    this.postTransition__({
-      from,
-      event: 'reset',
-      to: this.initialState_,
-    });
+    const eventDetail: StateEventDetail<S, E> = {from, event: 'reset', to: this.initialState_};
+    return this.postTransition__(eventDetail);
   }
 
   /**
@@ -77,9 +82,6 @@ export abstract class AlwatrFluxStateMachineBase<S extends string, E extends str
 
     const eventDetail: StateEventDetail<S, E> = {from: fromState, event, to: toState};
 
-    if ((await this.shouldTransition_(eventDetail)) !== true) return;
-
-    this.notify_({state: toState}); // message update but notify event delayed after execActions.
 
     this.postTransition__(eventDetail);
   }
@@ -88,7 +90,7 @@ export abstract class AlwatrFluxStateMachineBase<S extends string, E extends str
    * Execute all actions for current state.
    */
   private async postTransition__(eventDetail: StateEventDetail<S, E>): Promise<void> {
-    this.logger_.logMethodArgs?.('_transitioned', eventDetail);
+    this.logger_.logMethodArgs?.('postTransition__', eventDetail);
 
     await this.execAction__(`on_event_${eventDetail.event}`, eventDetail);
 
@@ -108,7 +110,7 @@ export abstract class AlwatrFluxStateMachineBase<S extends string, E extends str
   private execAction__(name: ActionName<S, E | 'reset'>, eventDetail: StateEventDetail<S, E>): MaybePromise<void> {
     const actionFn = this.actionRecord_[name];
     if (typeof actionFn === 'function') {
-      this.logger_.logMethodArgs?.('_$execAction', name);
+      this.logger_.logMethodArgs?.('execAction__', name);
       return actionFn.call(this, eventDetail);
     }
   }
