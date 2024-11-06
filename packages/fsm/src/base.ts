@@ -82,6 +82,9 @@ export abstract class AlwatrFluxStateMachineBase<S extends string, E extends str
 
     const eventDetail: StateEventDetail<S, E> = {from: fromState, event, to: toState};
 
+    if ((await this.shouldTransition_(eventDetail)) !== true) return;
+
+    this.notify_({state: toState}); // message update but notify event delayed after execActions.
 
     this.postTransition__(eventDetail);
   }
