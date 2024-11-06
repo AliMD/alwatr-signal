@@ -8,10 +8,10 @@ import {packageTracer} from '@alwatr/nanolib';
 
 __dev_mode__: packageTracer.add(__package_name__, __package_version__);
 
-type ExtraState = 'offlineCheck' | 'reloading' | 'reloadingFailed';
+type ExtraState = 'offline_check' | 'reloading' | 'reloading_failed';
 export type ServerContextState = ServerRequestState | ExtraState;
 
-type ExtraEvent = 'cacheNotFound';
+type ExtraEvent = 'cache_not_found';
 export type ServerContextEvent = ServerRequestEvent | ExtraEvent;
 
 export type AlwatrRemoteContextStateMachineConfig = AlwatrFetchStateMachineConfig<ServerContextState>;
@@ -28,37 +28,37 @@ export abstract class AlwatrRemoteContextStateMachineBase<T extends Json = Json>
 
     this.stateRecord_ = {
       initial: {
-        request: 'offlineCheck',
+        request: 'offline_check',
       },
       /**
        * Just check offline cache data before online request.
        */
-      offlineCheck: {
-        requestFailed: 'failed',
-        cacheNotFound: 'loading',
-        requestSucceeded: 'reloading',
+      offline_check: {
+        request_failed: 'failed',
+        cache_not_found: 'loading',
+        request_succeeded: 'reloading',
       },
       /**
        * First loading without any cached context.
        */
       loading: {
-        requestFailed: 'failed',
-        requestSucceeded: 'complete',
+        request_failed: 'failed',
+        request_succeeded: 'complete',
       },
       /**
        * First loading failed without any cached context.
        */
       failed: {
-        request: 'loading', // //TODO: why offlineCheck? should be loading!
+        request: 'loading', // //TODO: why offline_check? should be loading!
       },
       reloading: {
-        requestFailed: 'reloadingFailed',
-        requestSucceeded: 'complete',
+        request_failed: 'reloading_failed',
+        request_succeeded: 'complete',
       },
       /**
        * Reloading failed with previously cached context exist.
        */
-      reloadingFailed: {
+      reloading_failed: {
         request: 'reloading',
       },
       complete: {
@@ -67,10 +67,10 @@ export abstract class AlwatrRemoteContextStateMachineBase<T extends Json = Json>
     };
 
     this.actionRecord_ = {
-      on_offlineCheck_enter: this.offlineRequestAction_,
-      on_loading_enter: this.onlineRequestAction_,
-      on_reloading_enter: this.onlineRequestAction_,
-      on_requestSucceeded: this.updateContextAction_,
+      on_state_offline_check_enter: this.offlineRequestAction_,
+      on_state_loading_enter: this.onlineRequestAction_,
+      on_state_reloading_enter: this.onlineRequestAction_,
+      on_event_request_succeeded: this.updateContextAction_,
     };
   }
 
@@ -101,7 +101,7 @@ export abstract class AlwatrRemoteContextStateMachineBase<T extends Json = Json>
     this.logger_.logMethod?.('requestFailed_');
 
     if (error.message === 'fetch_cache_not_found') {
-      this.transition_('cacheNotFound');
+      this.transition_('cache_not_found');
     }
     else {
       super.requestFailed_(error);

@@ -1,18 +1,18 @@
 import {packageTracer} from '@alwatr/nanolib';
 import {AlwatrObservable, type AlwatrObservableConfig} from '@alwatr/observable';
 
-import type {ActionName, ActionRecord, MachineEvent, MachineState, StateEventDetail, StateRecord} from './type.js';
+import type {ActionName, ActionRecord, StateEventDetail, StateRecord} from './type.js';
 
 __dev_mode__: packageTracer.add(__package_name__, __package_version__);
 
-export interface AlwatrFluxStateMachineConfig<S extends MachineState> extends AlwatrObservableConfig {
+export interface AlwatrFluxStateMachineConfig<S extends string> extends AlwatrObservableConfig {
   initialState: S;
 }
 
 /**
  * Flux (Finite) State Machine Base Class
  */
-export abstract class AlwatrFluxStateMachineBase<S extends MachineState, E extends MachineEvent> extends AlwatrObservable<{state: S}> {
+export abstract class AlwatrFluxStateMachineBase<S extends string, E extends string> extends AlwatrObservable<{state: S}> {
   /**
    * States and transitions config.
    */
@@ -45,7 +45,7 @@ export abstract class AlwatrFluxStateMachineBase<S extends MachineState, E exten
     this.message_ = {state: this.initialState_};
     this.postTransition__({
       from,
-      event: 'reset' as E,
+      event: 'reset',
       to: this.initialState_,
     });
   }
@@ -63,7 +63,7 @@ export abstract class AlwatrFluxStateMachineBase<S extends MachineState, E exten
    */
   protected async transition_(event: E): Promise<void> {
     const fromState = this.message_.state;
-    const toState = this.stateRecord_[fromState]?.[event] ?? this.stateRecord_._all?.[event];
+    const toState = this.stateRecord_[fromState]?.[event];
 
     this.logger_.logMethodArgs?.('transition_', {fromState, event, toState});
 
@@ -79,7 +79,7 @@ export abstract class AlwatrFluxStateMachineBase<S extends MachineState, E exten
 
     if ((await this.shouldTransition_(eventDetail)) !== true) return;
 
-    this.notify_({state: toState});
+    this.notify_({state: toState}); // message update but notify event delayed after execActions.
 
     this.postTransition__(eventDetail);
   }
@@ -90,28 +90,22 @@ export abstract class AlwatrFluxStateMachineBase<S extends MachineState, E exten
   private async postTransition__(eventDetail: StateEventDetail<S, E>): Promise<void> {
     this.logger_.logMethodArgs?.('_transitioned', eventDetail);
 
-    await this.execAction__(`on_${eventDetail.event}`, eventDetail);
+    await this.execAction__(`on_event_${eventDetail.event}`, eventDetail);
 
     if (eventDetail.from !== eventDetail.to) {
-      await this.execAction__(`on_state_exit`, eventDetail);
-      await this.execAction__(`on_${eventDetail.from}_exit`, eventDetail);
-      await this.execAction__(`on_state_enter`, eventDetail);
-      await this.execAction__(`on_${eventDetail.to}_enter`, eventDetail);
+      await this.execAction__(`on_any_state_exit`, eventDetail);
+      await this.execAction__(`on_state_${eventDetail.from}_exit`, eventDetail);
+      await this.execAction__(`on_any_state_enter`, eventDetail);
+      await this.execAction__(`on_state_${eventDetail.to}_enter`, eventDetail);
     }
 
-    if (Object.hasOwn(this, `on_${eventDetail.from}_${eventDetail.event}`)) {
-      this.execAction__(`on_${eventDetail.from}_${eventDetail.event}`, eventDetail);
-    }
-    else {
-      // The action `all_eventName` is executed only if the action `fromState_eventName` is not defined.
-      this.execAction__(`on_all_${eventDetail.event}`, eventDetail);
-    }
+    this.execAction__(`on_state_${eventDetail.from}_event_${eventDetail.event}`, eventDetail);
   }
 
   /**
    * Execute action name if defined in _actionRecord.
    */
-  private execAction__(name: ActionName<S, E>, eventDetail: StateEventDetail<S, E>): MaybePromise<void> {
+  private execAction__(name: ActionName<S, E | 'reset'>, eventDetail: StateEventDetail<S, E>): MaybePromise<void> {
     const actionFn = this.actionRecord_[name];
     if (typeof actionFn === 'function') {
       this.logger_.logMethodArgs?.('_$execAction', name);

@@ -4,7 +4,7 @@ import {packageTracer, fetch, type FetchOptions} from '@alwatr/nanolib';
 __dev_mode__: packageTracer.add(__package_name__, __package_version__);
 
 export type ServerRequestState = 'initial' | 'loading' | 'failed' | 'complete';
-export type ServerRequestEvent = 'request' | 'requestFailed' | 'requestSucceeded';
+export type ServerRequestEvent = 'request' | 'request_failed' | 'request_succeeded';
 
 export type {FetchOptions};
 
@@ -25,8 +25,8 @@ export abstract class AlwatrFetchStateMachineBase<
       request: 'loading',
     },
     loading: {
-      requestFailed: 'failed',
-      requestSucceeded: 'complete',
+      request_failed: 'failed',
+      request_succeeded: 'complete',
     },
     failed: {
       request: 'loading',
@@ -37,7 +37,7 @@ export abstract class AlwatrFetchStateMachineBase<
   } as StateRecord<ServerRequestState | ExtraState, ServerRequestEvent | ExtraEvent>;
 
   protected override actionRecord_ = {
-    on_loading_enter: this.requestAction_,
+    on_state_loading_enter: this.requestAction_,
   } as ActionRecord<ServerRequestState | ExtraState, ServerRequestEvent | ExtraEvent>;
 
   constructor(config: AlwatrFetchStateMachineConfig<ServerRequestState | ExtraState>) {
@@ -83,12 +83,12 @@ export abstract class AlwatrFetchStateMachineBase<
 
   protected requestSucceeded_(): void {
     this.logger_.logMethod?.('requestSucceeded_');
-    this.transition_('requestSucceeded');
+    this.transition_('request_succeeded');
   }
 
   protected requestFailed_(error: Error): void {
     this.logger_.error('requestFailed_', 'fetch_failed', error);
-    this.transition_('requestFailed');
+    this.transition_('request_failed');
   }
 
   protected setFetchOptions_(options?: Partial<FetchOptions>): void {
