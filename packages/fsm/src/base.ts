@@ -30,7 +30,10 @@ export abstract class AlwatrFluxStateMachineBase<S extends string, E extends str
   constructor(config: AlwatrFluxStateMachineConfig<S>) {
     config.loggerPrefix ??= 'flux-state-machine';
     super(config);
-    this.message_ = {state: this.initialState_ = config.initialState};
+
+    this.initialState_ = config.initialState;
+    this.message_ = {state: this.initialState_};
+    this.resetToInitialState_();
   }
 
   /**
@@ -38,7 +41,13 @@ export abstract class AlwatrFluxStateMachineBase<S extends string, E extends str
    */
   protected resetToInitialState_(): void {
     this.logger_.logMethod?.('resetToInitialState_');
+    const from = this.message_.state;
     this.message_ = {state: this.initialState_};
+    this.postTransition__({
+      from,
+      event: 'reset',
+      to: this.initialState_,
+    });
   }
 
   /**
@@ -54,7 +63,7 @@ export abstract class AlwatrFluxStateMachineBase<S extends string, E extends str
    */
   protected async transition_(event: E): Promise<void> {
     const fromState = this.message_.state;
-    const toState = this.stateRecord_[fromState]?.[event] ?? this.stateRecord_._all?.[event];
+    const toState = this.stateRecord_[fromState]?.[event];
 
     this.logger_.logMethodArgs?.('transition_', {fromState, event, toState});
 
@@ -70,7 +79,7 @@ export abstract class AlwatrFluxStateMachineBase<S extends string, E extends str
 
     if ((await this.shouldTransition_(eventDetail)) !== true) return;
 
-    this.notify_({state: toState});
+    this.notify_({state: toState}); // message update but notify event delayed after execActions.
 
     this.postTransition__(eventDetail);
   }
@@ -81,28 +90,22 @@ export abstract class AlwatrFluxStateMachineBase<S extends string, E extends str
   private async postTransition__(eventDetail: StateEventDetail<S, E>): Promise<void> {
     this.logger_.logMethodArgs?.('_transitioned', eventDetail);
 
-    await this.execAction__(`on_${eventDetail.event}`, eventDetail);
+    await this.execAction__(`on_event_${eventDetail.event}`, eventDetail);
 
     if (eventDetail.from !== eventDetail.to) {
-      await this.execAction__(`on_state_exit`, eventDetail);
-      await this.execAction__(`on_${eventDetail.from}_exit`, eventDetail);
-      await this.execAction__(`on_state_enter`, eventDetail);
-      await this.execAction__(`on_${eventDetail.to}_enter`, eventDetail);
+      await this.execAction__(`on_any_state_exit`, eventDetail);
+      await this.execAction__(`on_state_${eventDetail.from}_exit`, eventDetail);
+      await this.execAction__(`on_any_state_enter`, eventDetail);
+      await this.execAction__(`on_state_${eventDetail.to}_enter`, eventDetail);
     }
 
-    if (Object.hasOwn(this, `on_${eventDetail.from}_${eventDetail.event}`)) {
-      this.execAction__(`on_${eventDetail.from}_${eventDetail.event}`, eventDetail);
-    }
-    else {
-      // The action `all_eventName` is executed only if the action `fromState_eventName` is not defined.
-      this.execAction__(`on_all_${eventDetail.event}`, eventDetail);
-    }
+    this.execAction__(`on_state_${eventDetail.from}_event_${eventDetail.event}`, eventDetail);
   }
 
   /**
    * Execute action name if defined in _actionRecord.
    */
-  private execAction__(name: ActionName<S, E>, eventDetail: StateEventDetail<S, E>): MaybePromise<void> {
+  private execAction__(name: ActionName<S, E | 'reset'>, eventDetail: StateEventDetail<S, E>): MaybePromise<void> {
     const actionFn = this.actionRecord_[name];
     if (typeof actionFn === 'function') {
       this.logger_.logMethodArgs?.('_$execAction', name);
