@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.1](https://github.com/Alwatr/flux/compare/v4.0.0...v4.0.1) (2024-11-06)
+
+### Bug Fixes
+
+* **fsm:** resetToInitialState logic and enhance logging in state transitions ([1e81527](https://github.com/Alwatr/flux/commit/1e81527501fe68e5194f9df059ebf41d1623558e)) by @
+
 ## [4.0.0](https://github.com/Alwatr/flux/compare/v3.2.2...v4.0.0) (2024-11-06)
 
 ### ⚠ BREAKING CHANGES
