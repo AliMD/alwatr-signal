@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.0](https://github.com/Alwatr/flux/compare/v3.2.2...v4.0.0) (2024-11-06)
+
+### ⚠ BREAKING CHANGES
+
+* **fsm:** all name of type ActionName in class `actionRecord_` changed
+
+### Code Refactoring
+
+* **fsm:** update action naming conventions and enhance event handling in state transitions ([c3a4094](https://github.com/Alwatr/flux/commit/c3a40940c0a5dee11dbb0fbaaa45d811603e5ff7)) by @AliMD
+
+### Dependencies update
+
+* update ([a0c4014](https://github.com/Alwatr/flux/commit/a0c40144c50ba69083864bd4403b7c0dab388a2f)) by @AliMD
+
 ## [3.2.2](https://github.com/Alwatr/flux/compare/v3.2.1...v3.2.2) (2024-11-02)
 
 ### Dependencies update
