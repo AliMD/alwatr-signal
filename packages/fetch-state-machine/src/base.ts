@@ -1,9 +1,4 @@
-import {
-  AlwatrFluxStateMachineBase,
-  type StateRecord,
-  type ActionRecord,
-  type AlwatrFluxStateMachineConfig
-} from '@alwatr/fsm';
+import {AlwatrFluxStateMachineBase, type StateRecord, type ActionRecord, type AlwatrFluxStateMachineConfig} from '@alwatr/fsm';
 import {packageTracer, fetch, type FetchOptions} from '@alwatr/nanolib';
 
 __dev_mode__: packageTracer.add(__package_name__, __package_version__);
@@ -13,7 +8,7 @@ export type ServerRequestEvent = 'request' | 'requestFailed' | 'requestSucceeded
 
 export type {FetchOptions};
 
-export interface AlwatrFetchStateMachineConfig<S extends string> extends AlwatrFluxStateMachineConfig<S> {
+export interface AlwatrFetchStateMachineConfig<S extends string> extends Omit<AlwatrFluxStateMachineConfig<S>, 'initialState'> {
   fetch: Partial<FetchOptions>;
 }
 
@@ -47,7 +42,10 @@ export abstract class AlwatrFetchStateMachineBase<
 
   constructor(config: AlwatrFetchStateMachineConfig<ServerRequestState | ExtraState>) {
     config.loggerPrefix ??= 'fetch-state-machine';
-    super(config);
+    super({
+      ...config,
+      initialState: 'initial',
+    });
     this.baseFetchOptions_ = config.fetch;
   }
 
