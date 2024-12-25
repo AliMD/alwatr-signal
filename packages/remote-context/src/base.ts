@@ -6,6 +6,8 @@ import {
 } from '@alwatr/fetch-state-machine';
 import {packageTracer} from '@alwatr/nanolib';
 
+import type {Json} from '@alwatr/type-helper';
+
 __dev_mode__: packageTracer.add(__package_name__, __package_version__);
 
 type ExtraState = 'offline_check' | 'reloading' | 'reloading_failed';
@@ -22,6 +24,7 @@ export abstract class AlwatrRemoteContextStateMachineBase<T extends Json = Json>
   ExtraEvent
 > {
   protected context_?: T;
+  protected isLoadedFromRemote_ = true;
 
   constructor(config: AlwatrRemoteContextStateMachineConfig) {
     super(config);
@@ -36,7 +39,7 @@ export abstract class AlwatrRemoteContextStateMachineBase<T extends Json = Json>
       offline_check: {
         request_failed: 'failed',
         cache_not_found: 'loading',
-        request_succeeded: 'reloading',
+        request_succeeded: 'complete',
       },
       /**
        * First loading without any cached context.
@@ -76,12 +79,14 @@ export abstract class AlwatrRemoteContextStateMachineBase<T extends Json = Json>
 
   protected offlineRequestAction_(): void {
     this.logger_.logMethod?.('offlineRequestAction_');
+    this.isLoadedFromRemote_ = false;
     this.currentFetchOptions_!.cacheStrategy = 'cache_only';
     this.requestAction_();
   }
 
   protected onlineRequestAction_(): void {
     this.logger_.logMethod?.('onlineRequestAction_');
+    this.isLoadedFromRemote_ = true;
     this.currentFetchOptions_!.cacheStrategy = 'update_cache';
     this.requestAction_();
   }

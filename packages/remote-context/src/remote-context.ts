@@ -1,8 +1,12 @@
-import {AlwatrRemoteContextStateMachineBase, type ServerContextState} from './base.js';
+import {
+  AlwatrRemoteContextStateMachineBase as AlwatrManualReloadRemoteContextStateMachineBase,
+  type ServerContextState,
+} from './base.js';
 
-import type {FetchOptions} from '@alwatr/nanolib';
+import type {FetchOptions} from '@alwatr/flux';
+import type {Json} from '@alwatr/type-helper';
 
-export class AlwatrRemoteContextStateMachine<T extends Json = Json> extends AlwatrRemoteContextStateMachineBase<T> {
+export class AlwatrManualReloadRemoteContextStateMachine<T extends Json = Json> extends AlwatrManualReloadRemoteContextStateMachineBase<T> {
   /**
    * Current state.
    */
@@ -12,6 +16,10 @@ export class AlwatrRemoteContextStateMachine<T extends Json = Json> extends Alwa
 
   get context(): T | undefined {
     return this.context_;
+  }
+
+  get isLoadedFromRemote(): boolean {
+    return this.isLoadedFromRemote_;
   }
 
   request(fetchOptions?: Partial<FetchOptions>): void {
@@ -25,3 +33,5 @@ export class AlwatrRemoteContextStateMachine<T extends Json = Json> extends Alwa
     this.clean_();
   }
 }
+
+export type {ServerContextState as ManualReloadServerContextState};
